@@ -1,0 +1,237 @@
+openapi: 3.0.0
+info:
+  title: Pearl Jam API
+  description: API for accessing Pearl Jam related information including albums and music
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000/api
+
+paths:
+  /albums:
+    get:
+      summary: List all albums
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:    
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Album'
+    post:
+      summary: Create a new album
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAlbum'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+
+  /albums/{id}:
+    get:
+      summary: Get album by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+    put:
+      summary: Update an album
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAlbum'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+    delete:
+      summary: Delete an album
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully deleted
+
+  /music:
+    get:
+      summary: List all music
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Music'
+    post:
+      summary: Create a new music entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMusic'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Music'
+
+  /music/{id}:
+    get:
+      summary: Get music by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Music'
+    put:
+      summary: Update a music entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMusic'
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Music'
+    delete:
+      summary: Delete a music entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully deleted
+
+components:
+  schemas:
+    Album:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        release_year:
+          type: integer
+
+    NewAlbum:
+      type: object
+      required:
+        - title
+        - release_year
+      properties:
+        title:
+          type: string
+        release_year:
+          type: integer
+
+    UpdateAlbum:
+      type: object
+      properties:
+        title:
+          type: string
+        release_year:
+          type: integer
+
+    Music:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        album_id:
+          type: integer
+        duration:
+          type: integer
+        track_number:
+          type: integer
+
+    NewMusic:
+      type: object
+      required:
+        - title
+        - album_id
+        - duration
+        - track_number
+      properties:
+        title:
+          type: string
+        album_id:
+          type: integer
+        duration:
+          type: integer
+        track_number:
+          type: integer
+
+    UpdateMusic:
+      type: object
+      properties:
+        title:
+          type: string
+        album_id:
+          type: integer
+        duration:
+          type: integer
+        track_number:
+          type: integer

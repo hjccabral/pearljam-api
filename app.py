@@ -23,65 +23,68 @@ def get_db_connection():
         app.logger.error(f"Database connection failed: {err}")
         raise
 
-@app.route('/api/pearl-jam', methods=['GET'])
-def get_all_pearl_jam_data():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute("""
-        SELECT a.id as album_id, a.name as album_name, a.year, 
-               s.name as song_name, s.track_number
-        FROM albums a
-        LEFT JOIN songs s ON a.id = s.album_id
-        ORDER BY a.year, a.id, s.track_number
-    """)
-    results = cursor.fetchall()
-    
-    album_data = {}
-    for row in results:
-        album_id = row['album_id']
-        if album_id not in album_data:
-            album_data[album_id] = {
-                'name': row['album_name'],
-                'year': row['year'],
-                'songs': []
+@app.route('/api/pearl-jam/integrants', methods=['GET'])
+def get_pearl_jam_integrants():
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT name, instrument, start_year, end_year
+            FROM integrants
+            ORDER BY start_year, name
+        """)
+        results = cursor.fetchall()
+
+        integrants = []
+        for row in results:
+            integrant = {
+                'name': row['name'],
+                'instrument': row['instrument'],
+                'start_year': row['start_year'],
+                'end_year': row['end_year'] if row['end_year'] else 'Present'
             }
-        if row['song_name']:
-            album_data[album_id]['songs'].append({
-                'name': row['song_name'],
-                'track_number': row['track_number']
-            })
-    
-    result = {
-        "band": "Pearl Jam",
-        "album": list(album_data.values())
-    }
-    
-    conn.close()
-    return jsonify(result)
+            integrants.append(integrant)
 
-@app.route('/api/pearl-jam/music/year/<int:year>', methods=['GET'])
-def get_music_by_year(year):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute("SELECT name FROM songs WHERE year = %s", (year,))
-    music = cursor.fetchall()
-    
-    conn.close()
-    
-    if music:
-        return jsonify({
+        result = {
             "band": "Pearl Jam",
-            "year": year,
-            "music": [song['name'] for song in music]
-        })
-    else:
-        return jsonify({
-            "band": "Pearl Jam",
-            "error": f"No music found for the year {year}"
-        }), 404
+            "integrants": integrants
+        }
 
+        return jsonify(result)
+
+
+@app.route('/api/pearl-jam/album', methods=['GET'])
+def get_all_pearl_jam_data():
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT a.id as album_id, a.name as album_name, a.year,
+                   s.name as song_name, s.track_number
+            FROM albums a
+            LEFT JOIN songs s ON a.id = s.album_id
+            ORDER BY a.year, a.id, s.track_number
+        """)
+        results = cursor.fetchall()
+
+        album_data = defaultdict(lambda: {'songs': []})
+        for row in results:
+            album_id = row['album_id']
+            album_data[album_id]['name'] = row['album_name']
+            album_data[album_id]['year'] = row['year']
+            if row['song_name']:
+                album_data[album_id]['songs'].append({
+                    'name': row['song_name'],
+                    'track_number': row['track_number']
+                })
+
+        result = {
+            "band": "Pearl Jam",
+            "albums": list(album_data.values())
+        }
+
+        return jsonify(result)
+    
 @app.route('/api/pearl-jam/album/<string:album_name>', methods=['GET'])
 def get_album_info(album_name):
     conn = get_db_connection()
@@ -115,55 +118,67 @@ def get_album_info(album_name):
             "error": f"Album '{album_name}' not found"
         }), 404
 
+@app.route('/api/pearl-jam/music/year/<int:year>', methods=['GET'])
+def get_music_by_year(year):
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT s.name FROM songs s JOIN albums a ON s.album_id = a.id WHERE a.year = %s", (year,))
+        music = cursor.fetchall()
+
+        if music:
+            return jsonify({
+                "band": "Pearl Jam",
+                "year": year,
+                "music": [song['name'] for song in music]
+            })
+        else:
+            return jsonify({
+                "band": "Pearl Jam",
+                "error": f"No music found for the year {year}"
+            }), 404
+
 @app.route('/api/pearl-jam/music/<string:music_name>', methods=['GET'])
 def get_music_info(music_name):
-    app.logger.debug(f"Received request for music: {music_name}")
-    app.logger.debug(f"Request headers: {request.headers}")
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    query = """
-        SELECT s.name AS music_name, s.track_number, 
-               a.name AS album_name, a.year
-        FROM songs s
-        JOIN albums a ON s.album_id = a.id
-        WHERE s.name = %s
-    """
-    app.logger.info(f"Executing query: {query}")
-    cursor.execute(query, (music_name,))
-    music_info = cursor.fetchone()
-    
-    app.logger.info(f"Query result: {music_info}")
-    conn.close()
-    
-    if music_info:
-        response = jsonify({
-            "band": "Pearl Jam",
-            "music": {
-                "name": music_info['music_name'],
-                "track_number": music_info['track_number'],
-                "album": {
-                    "name": music_info['album_name'],
-                    "year": music_info['year']
-                }
-            }
-        })
-        response.headers['Content-Type'] = 'application/json'
-        app.logger.debug(f"Sending response: {response.get_data(as_text=True)}")
-        return response
-    else:
-        error_response = jsonify({
-            "band": "Pearl Jam",
-            "error": f"Music '{music_name}' not found"
-        }), 404
-        error_response[0].headers['Content-Type'] = 'application/json'
-        app.logger.debug(f"Sending error response: {error_response[0].get_data(as_text=True)}")
-        return error_response
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
+
+            query = """
+                SELECT s.name AS music_name, s.track_number,
+                       a.name AS album_name, a.year
+                FROM songs s
+                JOIN albums a ON s.album_id = a.id
+                WHERE s.name = %s
+            """
+            cursor.execute(query, (music_name,))
+            music_info = cursor.fetchone()
+
+            if music_info:
+                response = jsonify({
+                    "band": "Pearl Jam",
+                    "music": {
+                        "name": music_info['music_name'],
+                        "track_number": music_info['track_number'],
+                        "album": {
+                            "name": music_info['album_name'],
+                            "year": music_info['year']
+                        }
+                    }
+                })
+                response.headers['Content-Type'] = 'application/json'
+                return response
+            else:
+                return jsonify({
+                    "band": "Pearl Jam",
+                    "error": f"Music '{music_name}' not found"
+                }), 404
+    except Exception as e:
+        app.logger.error(f"Error in get_music_info: {str(e)}", exc_info=True)
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 @app.route('/test', methods=['GET'])
 def test():
-    app.logger.debug("Test route accessed")
     return jsonify({"message": "Test successful"}), 200
 
 @app.before_request
@@ -185,4 +200,4 @@ def after_request(response):
     return response
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000)

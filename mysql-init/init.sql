@@ -12,6 +12,14 @@ CREATE TABLE songs (
     FOREIGN KEY (album_id) REFERENCES albums(id)
 );
 
+CREATE TABLE integrants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    instrument VARCHAR(255) NOT NULL,
+    start_year INT NOT NULL,
+    end_year INT
+);
+
 INSERT INTO albums (name, year) VALUES
 ('Ten', 1991),
 ('Vs.', 1993),
@@ -24,6 +32,17 @@ INSERT INTO albums (name, year) VALUES
 ('Backspacer', 2009),
 ('Lightning Bolt', 2013),
 ('Gigaton', 2020);
+
+INSERT INTO integrants (name, instrument, start_year, end_year) VALUES
+('Eddie Vedder', 'Vocals, Guitar', 1990, NULL),
+('Mike McCready', 'Lead Guitar', 1990, NULL),
+('Stone Gossard', 'Rhythm Guitar', 1990, NULL),
+('Jeff Ament', 'Bass', 1990, NULL),
+('Matt Cameron', 'Drums', 1998, NULL),
+('Dave Krusen', 'Drums', 1990, 1991),
+('Matt Chamberlain', 'Drums', 1991, 1991),
+('Dave Abbruzzese', 'Drums', 1991, 1994),
+('Jack Irons', 'Drums', 1994, 1998);
 
 INSERT INTO songs (name, album_id, track_number) VALUES
 -- Ten (1991)
