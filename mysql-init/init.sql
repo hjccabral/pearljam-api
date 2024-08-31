@@ -192,3 +192,15 @@ INSERT INTO songs (name, album_id, track_number) VALUES
 ('Comes Then Goes', 11, 10),
 ('Retrograde', 11, 11),
 ('River Cross', 11, 12);
+-- Dark Matter (2024)
+('Scared of Fear', 12, 1),
+('React, Respond', 12, 2),
+('Wreckage', 12, 3),
+('Dark Matter', 12, 4),
+('Won''t Tell', 12, 5),
+('Upper Hand', 12, 6),
+('Waiting for Stevie', 12, 7),
+('Running', 12, 8),
+('Something Special', 12, 9),
+('Got to Give', 12, 10),
+('Setting Sun', 12, 11);
