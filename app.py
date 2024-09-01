@@ -177,6 +177,53 @@ def get_music_info(music_name):
         app.logger.error(f"Error in get_music_info: {str(e)}", exc_info=True)
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+@app.route('/api/pearl-jam/music', methods=['GET'])
+def get_all_music():
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
+
+            query = """
+                SELECT s.name AS music_name, s.track_number,
+                       a.name AS album_name, a.year
+                FROM songs s
+                JOIN albums a ON s.album_id = a.id
+                ORDER BY a.year, a.name, s.track_number
+            """
+            cursor.execute(query)
+            music_info = cursor.fetchall()
+
+            if music_info:
+                albums = defaultdict(lambda: {"year": None, "songs": []})
+                for row in music_info:
+                    album_name = row['album_name']
+                    albums[album_name]["year"] = row['year']
+                    albums[album_name]["songs"].append({
+                        "name": row['music_name'],
+                        "track_number": row['track_number']
+                    })
+
+                album_list = [{
+                    "name": album,
+                    "year": info["year"],
+                    "songs": info["songs"]
+                } for album, info in albums.items()]
+
+                response = jsonify({
+                    "band": "Pearl Jam",
+                    "albums": album_list
+                })
+                response.headers['Content-Type'] = 'application/json'
+                return response
+            else:
+                return jsonify({
+                    "band": "Pearl Jam",
+                    "error": "No music found"
+                }), 404
+    except Exception as e:
+        app.logger.error(f"Error in get_all_music: {str(e)}", exc_info=True)
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
 @app.route('/test', methods=['GET'])
 def test():
     return jsonify({"message": "Test successful"}), 200
