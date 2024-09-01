@@ -20,18 +20,19 @@ CREATE TABLE integrants (
     end_year INT
 );
 
-INSERT INTO albums (name, year) VALUES
-('Ten', 1991),
-('Vs.', 1993),
-('Vitalogy', 1994),
-('No Code', 1996),
-('Yield', 1998),
-('Binaural', 2000),
-('Riot Act', 2002),
-('Pearl Jam', 2006),
-('Backspacer', 2009),
-('Lightning Bolt', 2013),
-('Gigaton', 2020);
+INSERT INTO albums (id, name, year) VALUES
+(1, 'Ten', 1991),
+(2, 'Vs.', 1993),
+(3, 'Vitalogy', 1994),
+(4, 'No Code', 1996),
+(5, 'Yield', 1998),
+(6, 'Binaural', 2000),
+(7, 'Riot Act', 2002),
+(8, 'Pearl Jam', 2006),
+(9, 'Backspacer', 2009),
+(10, 'Lightning Bolt', 2013),
+(11, 'Gigaton', 2020),
+(12, 'Dark Matter', 2024);
 
 INSERT INTO integrants (name, instrument, start_year, end_year) VALUES
 ('Eddie Vedder', 'Vocals, Guitar', 1990, NULL),
@@ -191,7 +192,7 @@ INSERT INTO songs (name, album_id, track_number) VALUES
 ('Buckle Up', 11, 9),
 ('Comes Then Goes', 11, 10),
 ('Retrograde', 11, 11),
-('River Cross', 11, 12);
+('River Cross', 11, 12),
 -- Dark Matter (2024)
 ('Scared of Fear', 12, 1),
 ('React, Respond', 12, 2),

@@ -9,7 +9,7 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=password
-      - DB_NAME=pearl_jam_db
+      - DB_NAME=pearljam-db
     depends_on:
       - db
     logging:
@@ -22,11 +22,10 @@ services:
     image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=pearl_jam_db
+      - MYSQL_DATABASE=pearljam-db
     volumes:
       - ./mysql-init:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
-    command: --init-file /docker-entrypoint-initdb.d/init.sql
 
   swagger-ui:
     image: swaggerapi/swagger-ui
